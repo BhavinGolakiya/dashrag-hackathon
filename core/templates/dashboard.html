@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Query Runner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      height: 100vh;
+      color: #333;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      color: #333;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #4285f4;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #555;
+      padding: 15px 20px;
+      margin: 8px 0;
+      display: block;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar a:hover {
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      color: white;
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+    }
+
+    .sidebar a[style*="background"] {
+      background: linear-gradient(135deg, #4285f4, #34a853) !important;
+      color: white !important;
+      box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px 30px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      font-weight: 600;
+      color: #333;
+      font-size: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .content {
+      padding: 30px;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .card h3 {
+      color: #333;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    .card h3::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      border-radius: 2px;
+    }
+
+    textarea,
+    input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      font-family: 'Segoe UI', sans-serif;
+      margin-bottom: 15px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    textarea:focus,
+    input:focus {
+      outline: none;
+      border-color: #4285f4;
+      box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+    }
+
+    button {
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(66, 133, 244, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+      border: none;
+      padding: 15px 20px;
+      text-align: left;
+    }
+
+    th {
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      color: white;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    tr:nth-child(even) {
+      background: rgba(66, 133, 244, 0.05);
+    }
+
+    tr:hover {
+      background: rgba(66, 133, 244, 0.1);
+    }
+
+    tr:first-child th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    tr:first-child th:last-child {
+      border-top-right-radius: 12px;
+    }
+
+    tr:last-child td:first-child {
+      border-bottom-left-radius: 12px;
+    }
+
+    tr:last-child td:last-child {
+      border-bottom-right-radius: 12px;
+    }
+
+    /* Additional modern touches */
+    .card h4 {
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 25px 0 15px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid rgba(66, 133, 244, 0.2);
+    }
+
+    .card p {
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      padding: 15px;
+      background: rgba(66, 133, 244, 0.05);
+      border-radius: 8px;
+      border-left: 4px solid #4285f4;
+    }
+
+    /* Scrollbar styling */
+    .content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .content::-webkit-scrollbar-thumb {
+      background: rgba(66, 133, 244, 0.3);
+      border-radius: 4px;
+    }
+
+    .content::-webkit-scrollbar-thumb:hover {
+      background: rgba(66, 133, 244, 0.5);
+    }
+
+    /* Speech input styles */
+    .input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      background: #fff;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .input-container:focus-within {
+      border-color: #00d4ff;
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+    }
+
+    .input-container input {
+      margin-bottom: 0;
+      padding: 15px 60px 15px 15px;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      outline: none;
+      width: 100%;
+    }
+
+    .input-container input::placeholder {
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    .mic-button {
+      position: absolute;
+      right: 8px;
+      background: linear-gradient(135deg, #ea4335 0%, #d93025 100%);
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(234, 67, 53, 0.4);
+      z-index: 10;
+    }
+
+    .mic-button:hover {
+      background: linear-gradient(135deg, #d93025 0%, #b31412 100%);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(234, 67, 53, 0.5);
+    }
+
+    .mic-button:active {
+      transform: translateY(0) scale(0.95);
+      box-shadow: 0 2px 10px rgba(234, 67, 53, 0.4);
+    }
+
+    .mic-button.recording {
+      background: linear-gradient(135deg, #ea4335 0%, #d93025 100%);
+      animation: recordingPulse 2s infinite;
+      box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7);
+    }
+
+    .mic-button.recording::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(234, 67, 53, 0.3);
+      animation: ripple 2s infinite;
+    }
+
+    .mic-button svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+      transition: all 0.3s ease;
+    }
+
+    .mic-button:hover svg {
+      transform: scale(1.1);
+    }
+
+    .mic-button.recording svg {
+      animation: micWave 1s infinite;
+    }
+
+    .mic-button.recording .sound-waves {
+      opacity: 1 !important;
+      animation: soundWaves 2s infinite;
+    }
+
+    @keyframes recordingPulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7);
+      }
+
+      70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 15px rgba(234, 67, 53, 0);
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(234, 67, 53, 0);
+      }
+    }
+
+    @keyframes ripple {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+
+    @keyframes micWave {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    @keyframes soundWaves {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+      }
+
+      50% {
+        transform: scale(1.2);
+        opacity: 0.4;
+      }
+
+      100% {
+        transform: scale(1.6);
+        opacity: 0;
+      }
+    }
+
+    /* Speech controls */
+    .speech-controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: rgba(66, 133, 244, 0.05);
+      border-radius: 15px;
+      border: 1px solid rgba(66, 133, 244, 0.1);
+    }
+
+    .speech-btn {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid rgba(66, 133, 244, 0.2);
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      color: #4285f4;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .speech-btn:hover {
+      background: rgba(66, 133, 244, 0.1);
+      border-color: rgba(66, 133, 244, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(66, 133, 244, 0.2);
+    }
+
+    .speech-btn.active {
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      color: white;
+      border-color: transparent;
+    }
+
+    /* Status indicator */
+    .status-indicator {
+      font-size: 16px;
+      color: red;
+      margin: 1rem 0rem;
+      min-height: 2rem;
+      padding: 10px 15px;
+      font-weight: 500;
+    }
+
+
+
+    .pagination-btn {
+      background: #9f9fff;
+      border: 1px solid #ccc;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .pagination-btn:hover {
+      background: rgba(66, 133, 244, 0.1);
+    }
+
+    .pagination-btn.active {
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      color: white;
+      border: none;
+    }
+
+    .mic-button {
+      position: absolute;
+      right: 8px;
+      background: transparent;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 10;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .mic-button:hover {
+      background: transparent;
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    .mic-button:active {
+      transform: translateY(0) scale(0.95);
+    }
+
+    .mic-button.recording {
+      background: transparent;
+      animation: recordingPulse 2s infinite;
+    }
+
+    .mic-button.recording::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(234, 67, 53, 0.1);
+      animation: ripple 2s infinite;
+    }
+
+    .mic-button svg {
+      width: 24px;
+      height: 24px;
+      fill: #4285f4;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+      transition: all 0.3s ease;
+    }
+
+    .mic-button:hover svg {
+      transform: scale(1.1);
+    }
+
+    .mic-button.recording svg {
+      fill: #ea4335;
+      animation: micWave 1s infinite;
+    }
+
+    .mic-button.recording .sound-waves {
+      opacity: 1 !important;
+      animation: soundWaves 2s infinite;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">Users</a>
+    <a href="#">Transactions</a>
+    <a href="#">Reports</a>
+    <a href="#" style="background:linear-gradient(135deg, #4285f4, #34a853);color:white;">Query Runner</a>
+    <a href="#">Settings</a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="navbar">Welcome, Admin</div>
+    <div class="content">
+      <div class="card">
+        <h3>Ask a Question</h3>
+
+        <!-- Speech Controls -->
+        <!-- <div class="speech-controls">
+          <button type="button" class="speech-btn" id="speakBtn" onclick="toggleSpeech()">
+            🔊 Speak Response
+          </button>
+          <button type="button" class="speech-btn" id="stopBtn" onclick="stopSpeech()" style="display: none;">
+            ⏹️ Stop Speaking
+          </button>
+        </div> -->
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="input-container">
+            <input type="text" name="question" id="questionInput"
+              placeholder="e.g. Show me yesterday's revenue by provider" required />
+            <button type="button" class="mic-button" id="micButton" onclick="toggleRecording()"
+              title="Click to start/stop voice input">
+              <svg fill="#000000" height="800px" width="800px" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 512 512" xmlns:xlink="http://www.w3.org/1999/xlink" enable-background="new 0 0 512 512">
+                <g>
+                  <g>
+                    <path
+                      d="m439.5,236c0-11.3-9.1-20.4-20.4-20.4s-20.4,9.1-20.4,20.4c0,70-64,126.9-142.7,126.9-78.7,0-142.7-56.9-142.7-126.9 0-11.3-9.1-20.4-20.4-20.4s-20.4,9.1-20.4,20.4c0,86.2 71.5,157.4 163.1,166.7v57.5h-23.6c-11.3,0-20.4,9.1-20.4,20.4 0,11.3 9.1,20.4 20.4,20.4h88c11.3,0 20.4-9.1 20.4-20.4 0-11.3-9.1-20.4-20.4-20.4h-23.6v-57.5c91.6-9.3 163.1-80.5 163.1-166.7z" />
+                    <path
+                      d="m256,323.5c51,0 92.3-41.3 92.3-92.3v-127.9c0-51-41.3-92.3-92.3-92.3s-92.3,41.3-92.3,92.3v127.9c0,51 41.3,92.3 92.3,92.3zm-52.3-220.2c0-28.8 23.5-52.3 52.3-52.3s52.3,23.5 52.3,52.3v127.9c0,28.8-23.5,52.3-52.3,52.3s-52.3-23.5-52.3-52.3v-127.9z" />
+                  </g>
+                </g>
+              </svg>
+            </button>
+          </div>
+          <div class="status-indicator" id="statusIndicator"></div>
+          <button type="submit">Generate SQL</button>
+        </form>
+
+        {% if error %}
+        <h4>error:</h4>
+        <p>{{ error }}</p>
+        {% endif %}
+
+        {% if query %}
+        <h4>Question:</h4>
+        <p>{{ query }}</p>
+        {% endif %}
+
+        {% if output %}
+        {% if output|length > 0 %}
+        <h4>Query Result:</h4>
+        <div style="width: 100%; overflow: auto;">
+          <table id="resultsTable">
+            <thead>
+              <tr>
+                {% for col in output.0.keys %}
+                <th>{{ col }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="pagination" style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap; justify-content: center;">
+        </div>
+        {% else %}
+        <div style="text-align: center;
+          color: #777;
+          margin-top: 2rem;
+          height: 200px;
+          display: flex;
+          font-weight: 500;
+          border: 1px dashed #ccc;
+          border-radius: 8px;
+          align-content: center;
+          justify-content: center;
+          align-items: center;">
+          <span style="font-size: 22px; display: block; margin-bottom: 8px;">📭</span>
+          No Data Available
+        </div>
+        {% endif %}
+        {% else %}
+        <div style="text-align: center;
+          color: #777;
+          margin-top: 2rem;
+          height: 200px;
+          display: flex;
+          font-weight: 800;
+          border: 1px dashed #ccc;
+          border-radius: 8px;
+          align-content: center;
+          justify-content: center;
+          font-size: 2rem;
+          align-items: center;">
+          <!-- <span style="font-size: 22px; display: block; margin-bottom: 8px;">📭</span> -->
+          Enter Prompt for data
+        </div>
+        {% endif %}
+
+
+        {% if viz_spec %}
+        <h4 style="margin-top:16px">Visualization</h4>
+        <div id="viz" style="height:360px; width:100%; background:#fff; border:1px solid #eee; border-radius:8px;">
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+
+  <!-- Inject backend data (JSON strings!) -->
+  <script id="records-data" type="application/json">{{ output_json|default:"[]"|safe }}</script>
+  <script id="viz-spec" type="application/json">{{ viz_spec|default:"null"|safe }}</script>
+
+  <script>
+
+
+
+
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    function renderTablePage(page) {
+      const tableBody = document.querySelector("#resultsTable tbody");
+      if (!tableBody) return;
+
+      tableBody.innerHTML = "";
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageRecords = records.slice(start, end);
+
+      pageRecords.forEach(row => {
+        const tr = document.createElement("tr");
+        Object.values(row).forEach(val => {
+          const td = document.createElement("td");
+          td.textContent = val;
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function renderPagination() {
+      const paginationDiv = document.getElementById("pagination");
+      if (!paginationDiv) return;
+
+      paginationDiv.innerHTML = "";
+      const totalPages = Math.ceil(records.length / rowsPerPage);
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.classList.add("pagination-btn");
+        if (i === currentPage) btn.classList.add("active");
+        btn.onclick = () => {
+          currentPage = i;
+          renderTablePage(currentPage);
+          renderPagination();
+        };
+        paginationDiv.appendChild(btn);
+      }
+    }
+
+    // Render first page if table exists
+    document.addEventListener("DOMContentLoaded", () => {
+      if (records.length > 0 && document.querySelector("#resultsTable")) {
+        renderTablePage(currentPage);
+        renderPagination();
+      }
+    });
+
+
+
+
+    // Speech recognition and synthesis variables
+    let recognition = null;
+    let synthesis = window.speechSynthesis;
+    let isRecording = false;
+    let isSpeaking = false;
+    let currentUtterance = null;
+
+    // Initialize speech recognition
+    function initSpeechRecognition() {
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = function () {
+          isRecording = true;
+          document.getElementById('micButton').classList.add('recording');
+          updateStatus('Listening... Speak now');
+        };
+
+        recognition.onresult = function (event) {
+          const transcript = event.results[0][0].transcript;
+          document.getElementById('questionInput').value = transcript;
+          updateStatus('Voice input received: ' + transcript);
+        };
+
+        recognition.onerror = function (event) {
+          updateStatus('Error: ' + event.error);
+          stopRecording();
+        };
+
+        recognition.onend = function () {
+          stopRecording();
+        };
+      } else {
+        updateStatus('Speech recognition not supported in this browser');
+        document.getElementById('micButton').style.display = 'none';
+      }
+    }
+
+    // Toggle recording
+    function toggleRecording() {
+      if (!recognition) {
+        initSpeechRecognition();
+      }
+
+      if (isRecording) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    }
+
+    // Stop recording
+    function stopRecording() {
+      if (recognition) {
+        recognition.stop();
+      }
+      isRecording = false;
+      document.getElementById('micButton').classList.remove('recording');
+      updateStatus('');
+    }
+
+    // Toggle speech synthesis
+    function toggleSpeech() {
+      if (isSpeaking) {
+        stopSpeech();
+      } else {
+        startSpeech();
+      }
+    }
+
+    // Start speaking the response
+    function startSpeech() {
+      const queryText = document.querySelector('h4:contains("Question:") + p')?.textContent;
+      const resultText = document.querySelector('h4:contains("Query Result:")')?.nextElementSibling?.textContent;
+
+      let textToSpeak = '';
+      if (queryText) {
+        textToSpeak += 'Question: ' + queryText + '. ';
+      }
+      if (resultText) {
+        textToSpeak += 'Results: ' + resultText;
+      }
+
+      if (!textToSpeak) {
+        textToSpeak = 'No results to speak. Please run a query first.';
+      }
+
+      speakText(textToSpeak);
+      document.getElementById('speakBtn').style.display = 'none';
+      document.getElementById('stopBtn').style.display = 'inline-block';
+    }
+
+    // Stop speaking
+    function stopSpeech() {
+      if (currentUtterance) {
+        synthesis.cancel();
+        currentUtterance = null;
+      }
+      isSpeaking = false;
+      document.getElementById('speakBtn').style.display = 'inline-block';
+      document.getElementById('stopBtn').style.display = 'none';
+    }
+
+    // Speak text
+    function speakText(text) {
+      if (synthesis) {
+        currentUtterance = new SpeechSynthesisUtterance(text);
+        currentUtterance.rate = 0.9;
+        currentUtterance.pitch = 1;
+        currentUtterance.volume = 1;
+
+        currentUtterance.onstart = function () {
+          isSpeaking = true;
+          updateStatus('Speaking response...');
+        };
+
+        currentUtterance.onend = function () {
+          isSpeaking = false;
+          currentUtterance = null;
+          document.getElementById('speakBtn').style.display = 'inline-block';
+          document.getElementById('stopBtn').style.display = 'none';
+        };
+
+        currentUtterance.onerror = function (event) {
+          updateStatus('Speech error: ' + event.error);
+          isSpeaking = false;
+          currentUtterance = null;
+          document.getElementById('speakBtn').style.display = 'inline-block';
+          document.getElementById('stopBtn').style.display = 'none';
+        };
+
+        synthesis.speak(currentUtterance);
+      } else {
+        updateStatus('Speech synthesis not supported');
+      }
+    }
+
+    // Update status indicator
+    function updateStatus(message) {
+      document.getElementById('statusIndicator').textContent = message;
+    }
+
+    // Initialize speech recognition on page load
+    document.addEventListener('DOMContentLoaded', function () {
+      initSpeechRecognition();
+    });
+
+    // Parse injected JSON safely
+    const records = JSON.parse(document.getElementById("records-data")?.textContent || "[]");
+    const vizSpec = JSON.parse(document.getElementById("viz-spec")?.textContent || "null");
+
+    function prettify(field) {
+      if (!field) return "";
+      return String(field).replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function aggregate(records, spec) {
+      if (!spec || !records || !records.length) return { labels: [], series: [] };
+
+      const cat = spec.x?.field;
+      const y = spec.y?.field;
+      const agg = (spec.y?.agg || "sum").toLowerCase();
+      const seriesBy = spec.series_by?.field || null;   // <-- supports {field: "..."} shape
+
+      // No meaningful chart? bail out
+      if (["kpi", "table_only", "none"].includes(spec.chart)) return { labels: [], series: [] };
+
+      // Grouping
+      const key = r => (seriesBy ? `${r[cat]}||${r[seriesBy]}` : `${r[cat]}`);
+      const groups = new Map();
+
+      records.forEach(r => {
+        if (r == null) return;
+        if (!(cat in r)) return;
+        if (!seriesBy && agg !== "count" && !(y in r)) return;
+        const k = key(r);
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(r);
+      });
+
+      // Aggregation
+      const reduceVal = arr => {
+        if (agg === "count") return arr.length;
+        const nums = arr.map(r => Number(r[y] ?? 0));
+        if (agg === "avg") return nums.reduce((s, v) => s + v, 0) / (nums.length || 1);
+        if (agg === "min") return Math.min(...nums);
+        if (agg === "max") return Math.max(...nums);
+        return nums.reduce((s, v) => s + v, 0); // sum
+      };
+
+      const data = {};                 // { seriesName -> Map(label -> value) }
+      const labelsSet = new Set();
+      const seriesSet = new Set();
+
+      for (const [k, arr] of groups.entries()) {
+        const [xVal, sVal] = seriesBy ? k.split("||") : [k, "_"];
+        labelsSet.add(xVal);
+        seriesSet.add(sVal || "_");
+        if (!data[sVal || "_"]) data[sVal || "_"] = new Map();
+        data[sVal || "_"].set(xVal, reduceVal(arr));
+      }
+
+      // Apply top_n and sort (by total across series)
+      let labels = Array.from(labelsSet);
+      const totals = new Map(labels.map(l => {
+        let t = 0;
+        for (const sName of Object.keys(data)) {
+          t += Number(data[sName].get(l) || 0);
+        }
+        return [l, t];
+      }));
+
+      const sortDir = (spec.sort || "desc").toLowerCase();
+      labels.sort((a, b) => sortDir === "asc" ? (totals.get(a) - totals.get(b)) : (totals.get(b) - totals.get(a)));
+
+      const topN = Number(spec.top_n || 0);
+      if (topN > 0) labels = labels.slice(0, topN);
+
+      const seriesNames = seriesBy ? Array.from(seriesSet).filter(s => s !== undefined && s !== null) : ["_"];
+      const series = seriesNames.map(name => ({
+        name: seriesBy ? String(name) : (prettify(y) || "Value"),
+        type: (spec.chart === "line" ? "line" :
+          spec.chart === "scatter" ? "scatter" :
+            spec.chart === "stacked_bar" ? "bar" : "bar"),
+        data: labels.map(l => (data[name] && data[name].has(l)) ? data[name].get(l) : 0),
+        stack: (spec.chart === "stacked_bar") ? "stack" : undefined,
+        smooth: spec.chart === "line"
+      }));
+
+      return { labels, series };
+    }
+
+    // function renderECharts(elId, records, spec) {
+    //   const el = document.getElementById(elId);
+    //   if (!el || !spec) return;
+    //   const chart = echarts.init(el);
+
+    //   if (spec.chart === "kpi") {
+    //     el.innerHTML = `<div style="font:700 28px/1.2 Arial">Count: ${records.length}</div>
+    //                     <div style="color:#666;font:12px Arial">${spec.reason || ""}</div>`;
+    //     return;
+    //   }
+    //   if (spec.chart === "table_only" || spec.chart === "none") {
+    //     el.innerHTML = `<div style="color:#666;font:14px Arial">No meaningful chart. Showing table only.</div>`;
+    //     return;
+    //   }
+
+    //   const { labels, series } = aggregate(records, spec);
+
+    //   const many = labels.length > 20;
+    //   const option = {
+    //     tooltip: { trigger: 'axis' },
+    //     legend: { data: series.map(s => s.name) },  // <-- FIXED legend label
+    //     grid: { left: 60, right: 20, top: 40, bottom: many ? 80 : 50 },
+    //     xAxis: {
+    //       type: (spec.x?.type === "datetime" ? "time" : "category"),
+    //       data: labels,
+    //       name: prettify(spec.x?.field || "X Axis"),
+    //       nameLocation: "middle",
+    //       nameGap: 30,
+    //       axisLabel: {
+    //         interval: 0,
+    //         rotate: many ? 45 : 0,
+    //         formatter: v => (String(v).length > 16 ? String(v).slice(0,16) + "…" : v)
+    //       }
+    //     },
+    //     yAxis: {
+    //       type: 'value',
+    //       name: prettify(spec.y?.field || "Y Axis"),
+    //       nameLocation: "middle",
+    //       nameGap: 40
+    //     },
+    //     series
+    //   };
+
+    //   if (spec.chart === "pie") {
+    //     option.series = [{
+    //       name: prettify(spec.y?.field || "Value"),
+    //       type: 'pie',
+    //       radius: '60%',
+    //       data: labels.map((l, i) => ({ name: l, value: series[0]?.data?.[i] ?? 0 })),
+    //       label: { formatter: '{b}: {c}' }
+    //     }];
+    //     delete option.xAxis;
+    //     delete option.yAxis;
+    //   }
+
+    //   chart.setOption(option);
+    //   window.addEventListener('resize', () => chart.resize());
+    // }
+
+    // if (vizSpec) {
+    //   renderECharts("viz", records, vizSpec);
+    // }
+
+
+    function renderECharts(elId, records, spec) {
+      const el = document.getElementById(elId);
+      if (!el || !spec) return;
+      const chart = echarts.init(el);
+
+      if (spec.chart === "kpi") {
+        el.innerHTML = `<div style="font:700 28px/1.2 Arial">Count: ${records.length}</div>
+                      <div style="color:#666;font:12px Arial">${spec.reason || ""}</div>`;
+        return;
+      }
+      if (spec.chart === "table_only" || spec.chart === "none") {
+        el.innerHTML = `<div style="color:#666;font:14px Arial">No meaningful chart. Showing table only.</div>`;
+        return;
+      }
+
+      const { labels, series } = aggregate(records, spec);
+      const many = labels.length > 20;
+
+      const option = {
+        tooltip: { trigger: "axis" },
+        legend: { data: series.map(s => s.name) },
+        grid: { left: 60, right: 20, top: 40, bottom: many ? 80 : 50 },
+        xAxis: {
+          type: spec.x?.type === "datetime" ? "category" : "category",
+          data: labels,
+          axisLabel: { rotate: many ? 45 : 0 }
+        },
+        yAxis: {
+          type: "value",
+          name: prettify(spec.y?.field),
+          nameLocation: "middle",
+          nameGap: 45
+        },
+        series
+      };
+
+      chart.setOption(option);
+      window.addEventListener("resize", () => chart.resize());
+    }
+
+    // auto render visualization if spec exists
+    document.addEventListener("DOMContentLoaded", () => {
+      if (vizSpec && records.length > 0) {
+        renderECharts("viz", records, vizSpec);
+      }
+    });
+
+
+  </script>
+</body>
+
+</html>

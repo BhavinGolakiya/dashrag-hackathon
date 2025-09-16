@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.sqlite3
+
+# Envs
+.env
+.venv/
+venv/
+env/
+
+# VCS
+.git/
+.gitignore
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Node / others
+node_modules/
+dist/
+build/
